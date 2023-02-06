@@ -1,4 +1,3 @@
-const { string } = require("joi");
 const mongoose = require("mongoose");
 
 const contactSchema = new mongoose.Schema(
@@ -19,7 +18,7 @@ const contactSchema = new mongoose.Schema(
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: "user",
     },
   },
   { versionKey: false, timestamps: true }
