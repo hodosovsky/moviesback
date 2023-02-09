@@ -68,7 +68,7 @@ const verifyRegistration = async (verificationToken) => {
     html: `<h1>Registration successfully</h1>`,
   };
 
-  // await sgMail.send(msg);
+  await sgMail.send(msg);
 
   return { email, subscription, avatarURL, token };
 };
