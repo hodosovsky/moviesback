@@ -61,6 +61,8 @@ const verifyRegistration = async (verificationToken) => {
     verify: true,
     verificationToken: null,
   });
+  const token = await createToken(user);
+  const { email, subscription, avatarURL } = user;
 
   const msg = {
     to: user.email, // Change to your recipient
@@ -71,6 +73,8 @@ const verifyRegistration = async (verificationToken) => {
   };
 
   // await sgMail.send(msg);
+
+  return { email, subscription, avatarURL, token };
 };
 
 const reSendVerifyRegister = async (email) => {
