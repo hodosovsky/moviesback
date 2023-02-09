@@ -2,11 +2,14 @@ const express = require("express");
 
 const {
   registrationController,
+  registrationVerifyController,
   loginController,
   logoutController,
   currentUserController,
   changeSubscriptionController,
   changeAvatarController,
+  reSendVerifyRegisterController,
+  forgotPasswordController,
 } = require("../../controllers/authController");
 
 const { asyncWrapper } = require("../../helpers/apiHelpers");
@@ -14,6 +17,7 @@ const { asyncWrapper } = require("../../helpers/apiHelpers");
 const {
   userAuthValidation,
   changeSubscriptionValidation,
+  reSendVerifyRegisterValidation,
 } = require("../../middlewares/middlewares");
 const { authMiddleware } = require("../../middlewares/authMiddleware");
 const { uploadMiddleware } = require("../../helpers/multerConfig");
@@ -23,6 +27,20 @@ router.post(
   "/register",
   userAuthValidation,
   asyncWrapper(registrationController)
+);
+router.get(
+  "/verify/:verificationToken",
+  asyncWrapper(registrationVerifyController)
+);
+router.post(
+  "/verify",
+  reSendVerifyRegisterValidation,
+  asyncWrapper(reSendVerifyRegisterController)
+);
+router.post(
+  "/forgot_password",
+
+  asyncWrapper(forgotPasswordController)
 );
 router.post("/login", userAuthValidation, asyncWrapper(loginController));
 router.post("/logout", authMiddleware, asyncWrapper(logoutController));

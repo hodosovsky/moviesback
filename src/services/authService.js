@@ -1,18 +1,27 @@
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
 const { User } = require("../db/userModel");
+
 const {
   NotAuthorizedError,
   EmailConflictError,
   ValidationError,
+  WrongParametersError,
 } = require("../helpers/errors");
-const { createToken } = require("../helpers/apiHelpers");
+const {
+  createToken,
+  sendConfirmregisterMail,
+} = require("../helpers/apiHelpers");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs").promises;
 const Jimp = require("jimp");
+const { v4: uuidv4 } = require("uuid");
 
 const registration = async (email, password) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
   const findedUser = await User.findOne({ email });
 
   if (findedUser) throw new EmailConflictError(`Email ${email} in use`);
@@ -22,23 +31,95 @@ const registration = async (email, password) => {
     { s: "250", r: "x", d: "robohash" },
     true
   );
-
+  const verificationToken = uuidv4();
   const user = new User({
     email,
     password,
     avatarURL,
+    verificationToken,
   });
 
   await user.save();
-  const { token } = await login(email, password);
 
-  const { email: userEmail, subscription } = user;
+  await sendConfirmregisterMail(email, verificationToken);
+};
 
-  return { userEmail, subscription, token, avatarURL };
+const verifyRegistration = async (verificationToken) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  const user = await User.findOne({
+    verificationToken,
+  });
+
+  if (!user) throw new WrongParametersError("User not found");
+
+  await User.findOneAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+  const token = await createToken(user);
+  const { email, subscription, avatarURL } = user;
+
+  const msg = {
+    to: user.email, // Change to your recipient
+    from: "noreply_node@meta.ua", // Change to your verified sender
+    subject: "Thank you for registration",
+    text: `Registration successfully`,
+    html: `<h1>Registration successfully</h1>`,
+  };
+
+  await sgMail.send(msg);
+
+  return { email, subscription, avatarURL, token };
+};
+
+const reSendVerifyRegister = async (email) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  const user = await User.findOne({
+    email,
+  });
+
+  if (!user.verificationToken)
+    throw new ValidationError("Verification has already been passed");
+
+  const verificationToken = uuidv4();
+
+  await User.findOneAndUpdate(user._id, { verificationToken });
+
+  await sendConfirmregisterMail(email, verificationToken);
+};
+
+const forgotPassword = async (email) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  const user = await User.findOne({
+    email,
+    verify: true,
+  });
+
+  if (!user) throw new NotAuthorizedError(`No user with email ${email} found`);
+
+  const newPassword = uuidv4();
+  const temporaryPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = temporaryPassword;
+
+  await user.save();
+
+  const msg = {
+    to: user.email, // Change to your recipient
+    from: "noreply_node@meta.ua", // Change to your verified sender
+    subject: "Change Password",
+    text: `Your temporary password: ${temporaryPassword}`,
+    html: `<h1>Your temporary password: ${temporaryPassword}</h1>`,
+  };
+
+  await sgMail.send(msg);
 };
 
 const login = async (reqEmail, password) => {
-  const user = await User.findOne({ email: reqEmail });
+  const user = await User.findOne({ email: reqEmail, verify: true });
 
   if (!user)
     throw new NotAuthorizedError(`No user with email ${reqEmail} found`);
@@ -134,9 +215,7 @@ const changeAvatar = async (file, id) => {
 
     Jimp.read(fileName, (err, avatar) => {
       if (err) throw err;
-      avatar
-        .resize(250, 250) // resize
-        .write(fileName); // save
+      avatar.resize(250, 250).write(fileName);
     });
 
     const avatarPath = path.join("avatars", newName);
@@ -158,9 +237,12 @@ const changeAvatar = async (file, id) => {
 
 module.exports = {
   registration,
+  verifyRegistration,
   login,
   logout,
   getCurrentUser,
   changeSubscription,
   changeAvatar,
+  reSendVerifyRegister,
+  forgotPassword,
 };
