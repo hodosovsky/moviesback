@@ -42,10 +42,6 @@ const registration = async (email, password) => {
   await user.save();
 
   await sendConfirmregisterMail(email, verificationToken);
-
-  const { email: userEmail, subscription } = user;
-
-  return { userEmail, subscription, avatarURL };
 };
 
 const verifyRegistration = async (verificationToken) => {
