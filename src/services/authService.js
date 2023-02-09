@@ -100,9 +100,10 @@ const forgotPassword = async (email) => {
 
   if (!user) throw new NotAuthorizedError(`No user with email ${email} found`);
 
-  const password = uuidv4();
-  console.log(password);
-  user.password = password;
+  const newPassword = uuidv4();
+  const temporaryPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = temporaryPassword;
 
   await user.save();
 
@@ -110,8 +111,8 @@ const forgotPassword = async (email) => {
     to: user.email, // Change to your recipient
     from: "noreply_node@meta.ua", // Change to your verified sender
     subject: "Change Password",
-    text: `Your temporary password: ${password}`,
-    html: `<h1>Your temporary password: ${password}</h1>`,
+    text: `Your temporary password: ${temporaryPassword}`,
+    html: `<h1>Your temporary password: ${temporaryPassword}</h1>`,
   };
 
   await sgMail.send(msg);
