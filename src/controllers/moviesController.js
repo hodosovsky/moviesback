@@ -6,11 +6,9 @@ axios.defaults.baseURL = " https://api.themoviedb.org/3/";
 const getTrandingMoviesController = async (req, res, next) => {
   const { page = 1, period = "day", type = "all" } = req.query;
 
-  //   page = +page;
   const movies = await axios.get(
     `trending/${type}/${period}?&page=${page}&api_key=${process.env.API_KEY}`
   );
-
   res.json(movies.data);
 };
 
