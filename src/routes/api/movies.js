@@ -4,6 +4,7 @@ const {
   getTrandingMoviesController,
   getMovieController,
   getMovieReviewsController,
+  getActorsController,
 } = require("../../controllers/moviesController");
 
 const { authMiddleware } = require("../../middlewares/authMiddleware");
@@ -16,5 +17,6 @@ const router = express.Router();
 router.get("/", asyncWrapper(getTrandingMoviesController));
 router.get("/:movie_id", asyncWrapper(getMovieController));
 router.get("/:movie_id/reviews", asyncWrapper(getMovieReviewsController));
+router.get("/:movie_id/credits", asyncWrapper(getActorsController));
 
 module.exports = router;

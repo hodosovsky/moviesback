@@ -21,6 +21,15 @@ const getMovieController = async (req, res, next) => {
 
   res.json(movie.data);
 };
+const getActorsController = async (req, res, next) => {
+  const { movie_id } = req.params;
+  //   page = +page;
+  const movie = await axios.get(
+    `movie/${movie_id}/credits?api_key=${process.env.API_KEY}`
+  );
+
+  res.json(movie.data);
+};
 
 const getMovieReviewsController = async (req, res, next) => {
   const { movie_id } = req.params;
@@ -37,4 +46,5 @@ module.exports = {
   getTrandingMoviesController,
   getMovieController,
   getMovieReviewsController,
+  getActorsController,
 };
