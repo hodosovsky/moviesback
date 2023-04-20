@@ -14,18 +14,20 @@ const getTrandingMoviesController = async (req, res, next) => {
 
 const getMovieController = async (req, res, next) => {
   const { movie_id } = req.params;
+  const { language = "en-US" } = req.query;
   //   page = +page;
   const movie = await axios.get(
-    `movie/${movie_id}?api_key=${process.env.API_KEY}`
+    `movie/${movie_id}?api_key=${process.env.API_KEY}&language=${language}`
   );
 
   res.json(movie.data);
 };
 const getActorsController = async (req, res, next) => {
   const { movie_id } = req.params;
+  const { language = "en-US" } = req.query;
   //   page = +page;
   const movie = await axios.get(
-    `movie/${movie_id}/credits?api_key=${process.env.API_KEY}`
+    `movie/${movie_id}/credits?api_key=${process.env.API_KEY}&language=${language}`
   );
 
   res.json(movie.data);
@@ -33,10 +35,10 @@ const getActorsController = async (req, res, next) => {
 
 const getMovieReviewsController = async (req, res, next) => {
   const { movie_id } = req.params;
-  const { page = 1 } = req.query;
+  const { page = 1, language = "en-US" } = req.query;
   //   page = +page;
   const movie = await axios.get(
-    `movie/${movie_id}/reviews?api_key=${process.env.API_KEY}&page=${page}`
+    `movie/${movie_id}/reviews?api_key=${process.env.API_KEY}&language=${language}&page=${page}`
   );
 
   res.json(movie.data);
