@@ -33,6 +33,17 @@ const getActorsController = async (req, res, next) => {
   res.json(movie.data);
 };
 
+const getTrailersController = async (req, res, next) => {
+  const { movie_id } = req.params;
+  const { language = "en-US" } = req.query;
+  //   page = +page;
+  const movie = await axios.get(
+    `movie/${movie_id}/videos?api_key=${process.env.API_KEY}&language=${language}`
+  );
+
+  res.json(movie.data);
+};
+
 const getMovieReviewsController = async (req, res, next) => {
   const { movie_id } = req.params;
   const { page = 1, language = "en-US" } = req.query;
@@ -45,6 +56,7 @@ const getMovieReviewsController = async (req, res, next) => {
 };
 
 module.exports = {
+  getTrailersController,
   getTrandingMoviesController,
   getMovieController,
   getMovieReviewsController,
