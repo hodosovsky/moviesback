@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-axios.defaults.headers.common['Authorization'] = '5bfa85d8:a212478ea08355118d100959b187275f'
+axios.defaults.headers.common['Authorization'] = process.env.ALARM_KEY
 axios.defaults.baseURL = "https://api.ukrainealarm.com/api/v3/alerts";
 
 
