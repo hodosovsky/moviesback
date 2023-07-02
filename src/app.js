@@ -7,6 +7,7 @@ const authRouter = require("./routes/api/auth");
 const moviesRouter = require("./routes/api/movies");
 const personRouter = require("./routes/api/people");
 const reviewRouter = require("./routes/api/review");
+const alertsRouter = require('./routes/api/alarms')
 const { errorHandler } = require("../src/helpers/apiHelpers");
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/", moviesRouter);
 app.use("/api/person", personRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/users", authRouter);
+app.use("/api/alerts", alertsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
